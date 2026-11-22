@@ -1,0 +1,24 @@
+@startuml sequence_diagram
+' Intake -> Plan -> Coaching
+
+actor Owner
+participant "Copilot (React)" as C
+participant "AI Gateway" as G
+participant "Intake Extractor" as I
+participant "Solver + Adequacy Gate" as S
+participant "RAG Coaching" as R
+participant "Grounding Verifier" as V
+
+Owner -> C: "chunky 3-yr-old lab, itchy paws, hates fish"
+C -> G: auth + route
+G -> I: extract slots
+I --> C: profile (JSON + completeness)
+C -> S: recommend (profile)
+S --> C: plan (formula, portion)
+C -> R: coach (plan + query)
+R -> R: retrieve KB + rerank
+R --> V: draft rationale
+V --> R: grounded / rejected
+R --> C: rationale + citations
+C --> Owner: narrated answer + run ID
+@enduml

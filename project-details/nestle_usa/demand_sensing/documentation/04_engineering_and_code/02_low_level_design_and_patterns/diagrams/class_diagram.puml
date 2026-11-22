@@ -1,0 +1,74 @@
+@startuml class_diagram
+' Domain class diagram — Agentic GLP-1 Demand Sensing & Scenario Copilot
+
+skinparam classAttributeIconSize 0
+
+class ForecastRun {
+  +run_id: str
+  +model_version: str
+  +created_at: datetime
+  +status: Status
+  +start()
+  +complete()
+  +fail(reason)
+}
+
+class ForecastLine {
+  +sku_id: str
+  +store_id: str
+  +week: date
+  +p10: float
+  +p50: float
+  +p90: float
+}
+
+class Attribution {
+  +driver: Driver
+  +effect: float
+  +confidence: float
+  +sign_consistent: bool
+}
+
+class Scenario {
+  +query: str
+  +params: dict
+  +run_id: str
+}
+
+class Store {
+  +store_id: str
+  +banner_id: str
+  +dma: str
+  +income_quintile: str
+}
+
+class Product {
+  +sku_id: str
+  +brand: str
+  +category: str
+}
+
+enum Status {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+enum Driver {
+  GLP1
+  PRICE
+  MIX
+  DISTRIBUTION
+  PRIVATE_LABEL
+}
+
+ForecastRun "1" --> "*" ForecastLine : contains
+ForecastRun "1" --> "*" Attribution : decomposes
+Scenario "1" --> "1" ForecastRun : produces
+ForecastLine "*" --> "1" Product : for
+ForecastLine "*" --> "1" Store : at
+ForecastRun --> Status
+Attribution --> Driver
+
+@enduml

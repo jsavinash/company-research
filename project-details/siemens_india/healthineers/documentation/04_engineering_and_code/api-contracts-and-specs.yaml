@@ -1,0 +1,99 @@
+openapi: 3.0.3
+info:
+  title: Chest Triage & Calibrated CAD API
+  version: 1.0.0
+  description: >
+    Chest-radiograph triage and calibrated CAD. Returns a worklist triage category,
+    finding localization heatmaps, and site-calibrated confidence. The radiologist
+    remains the diagnostic authority; the system never auto-reports.
+servers:
+  - url: https://cad.healthineers.internal/v1
+
+security:
+  - bearerAuth: []
+
+paths:
+  /studies/{study_id}/analyze:
+    post:
+      summary: Analyze a chest X-ray study
+      parameters:
+        - name: study_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResult'
+
+  /worklist:
+    get:
+      summary: Get the triaged worklist
+      parameters:
+        - name: site_id
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Worklist
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorklistItem'
+
+  /reviews:
+    post:
+      summary: Submit a radiologist action
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewAction'
+      responses:
+        '200':
+          description: Action recorded
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    AnalysisResult:
+      type: object
+      properties:
+        study_id: { type: string }
+        triage: { type: string, enum: [routine, priority, urgent, cannot_assess] }
+        findings:
+          type: array
+          items:
+            type: object
+            properties:
+              type: { type: string }
+              confidence: { type: number }
+              calibrated_confidence: { type: number }
+              heatmap_ref: { type: string }
+        model_version: { type: string }
+        site_id: { type: string }
+
+    WorklistItem:
+      type: object
+      properties:
+        study_id: { type: string }
+        triage: { type: string }
+        priority_score: { type: number }
+
+    ReviewAction:
+      type: object
+      required: [study_id, action]
+      properties:
+        study_id: { type: string }
+        action: { type: string, enum: [accept, adjust, reject, escalate] }
+        reason: { type: string }

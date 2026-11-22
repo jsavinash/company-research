@@ -1,0 +1,20 @@
+@startuml state_diagram
+' Coaching session lifecycle
+
+hide empty description
+
+[*] --> Requested
+Requested --> Retrieving : start
+Retrieving --> Generating : chunks ready
+Generating --> Verifying : draft ready
+Verifying --> Answered : grounded
+Verifying --> Refused : ungrounded
+Answered --> [*]
+Refused --> [*]
+
+note right of Refused
+  Low-relevance retrieval or
+  ungrounded claim -> refuse,
+  offer safe generic guidance
+end note
+@enduml

@@ -1,0 +1,109 @@
+openapi: 3.0.3
+info:
+  title: Product Discovery API
+  version: 1.0.0
+  description: >
+    Real-time search and recommendation platform. Separates retrieval (two-tower + ANN)
+    from ranking (LightGBM LambdaMART). Search is query-conditioned; recommendations
+    use session context.
+servers:
+  - url: https://discovery.client-retailer.com/v1
+
+security:
+  - apiKey: []
+
+paths:
+  /search:
+    post:
+      summary: Search with query-conditioned ranking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Ranked results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryResponse'
+
+  /recommendations:
+    post:
+      summary: Session-based recommendations (no query)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoRequest'
+      responses:
+        '200':
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryResponse'
+
+  /feedback:
+    post:
+      summary: Log impression/click/cart/order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackEvent'
+      responses:
+        '204':
+          description: Logged
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    SearchRequest:
+      type: object
+      required: [query]
+      properties:
+        query: { type: string }
+        user_id: { type: string }
+        session_id: { type: string }
+        filters: { type: object }
+
+    RecoRequest:
+      type: object
+      required: [placement]
+      properties:
+        placement: { type: string, enum: [home, category, cart, similar] }
+        user_id: { type: string }
+        session_id: { type: string }
+
+    DiscoveryResponse:
+      type: object
+      properties:
+        request_id: { type: string }
+        model_version: { type: string }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              sku_id: { type: string }
+              score: { type: number }
+              position: { type: integer }
+
+    FeedbackEvent:
+      type: object
+      required: [sku_id, event_type, position]
+      properties:
+        sku_id: { type: string }
+        event_type: { type: string, enum: [impression, click, add_to_cart, order] }
+        position: { type: integer }
+        model_version: { type: string }

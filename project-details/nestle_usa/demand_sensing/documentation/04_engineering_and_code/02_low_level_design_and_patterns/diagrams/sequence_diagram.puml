@@ -1,0 +1,27 @@
+@startuml sequence_diagram
+' Scenario what-if sequence
+
+actor Planner
+participant "Copilot (React)" as C
+participant "AI Gateway" as G
+participant "Scenario Agent" as S
+participant "Attribution Agent" as A
+participant "Forecast Agent" as F
+participant "Data Agent (MCP)" as D
+participant "Governance Agent" as V
+
+Planner -> C: "GLP-1 +5pp in SE -> DiGiorno by Q3?"
+C -> G: authenticate + route (frontier)
+G --> C: token / route
+C -> S: query + policy context
+S -> A: causal attribution (A2A)
+A --> S: driver effects (sign-consistent)
+S -> F: run forecast (+shock, MinT)
+F --> S: P10/P50/P90
+S -> D: fetch banner list + DQ flags (MCP)
+D --> S: data + quality caveats
+S -> V: guardrail check
+V --> S: approved (no price, cite run)
+S --> C: structured result + run ID
+C --> Planner: narrated answer + run ID
+@enduml

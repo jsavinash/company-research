@@ -71,4 +71,4 @@ Query → hybrid retrieval (Azure AI Search + vector) → rerank (cross-encoder)
 ## 9. Related
 
 - `Nestle-USA-DemandSensing-AIArchitect-UseCase/03-system-and-architecture/system-design-document.md`
-- `Nestle-USA-DemandSensing-AIArchitect-UseCase/04-engineering-and-code/low-level-design-specs.md`
+- `../../04_engineering_and_code/low-level-design-specs.md`

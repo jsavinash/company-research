@@ -1,0 +1,112 @@
+openapi: 3.0.3
+info:
+  title: Variant Triage API
+  version: 1.0.0
+  description: >
+    Confidence-scored variant triage for Nala CDS. Ranks germline variants,
+    attaches ACMG-aligned evidence codes and calibrated confidence, and routes
+    uncertain cases to a curator queue. The system never autonomously classifies.
+servers:
+  - url: https://api.nalagenetics.com/v1
+
+security:
+  - sessionAuth: []
+
+paths:
+  /triage:
+    post:
+      summary: Triage a VCF against a panel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriageRequest'
+      responses:
+        '200':
+          description: Triage result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriageResult'
+
+  /triage/{run_id}/results:
+    get:
+      summary: Get triage results for a run
+      parameters:
+        - name: run_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VariantResult'
+
+  /reviews:
+    post:
+      summary: Submit a curator action
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewAction'
+      responses:
+        '200':
+          description: Action recorded
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: session
+
+  schemas:
+    TriageRequest:
+      type: object
+      required: [vcf_url, panel_id]
+      properties:
+        vcf_url: { type: string }
+        panel_id: { type: string }
+
+    TriageResult:
+      type: object
+      properties:
+        run_id: { type: string }
+        model_version: { type: string }
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantResult'
+
+    VariantResult:
+      type: object
+      properties:
+        variant_id: { type: string }
+        gene: { type: string }
+        score: { type: number }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        abstained: { type: boolean }
+        codes:
+          type: array
+          items:
+            type: object
+            properties:
+              code: { type: string }
+              provenance: { type: object }
+        triage: { type: string, enum: [prioritize, deprioritize, queue, vus] }
+
+    ReviewAction:
+      type: object
+      required: [result_id, action]
+      properties:
+        result_id: { type: string }
+        action: { type: string, enum: [accept, override, reject, insufficient] }
+        reason: { type: string }

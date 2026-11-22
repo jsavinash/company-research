@@ -1,0 +1,37 @@
+@startuml class_diagram
+' Domain class diagram — Grounded Nutrition Intake & Coaching
+
+class PetProfile {
+  +pet_id: str
+  +species: str
+  +breed: str
+  +age_years: int
+  +completeness: float
+}
+
+class Plan {
+  +plan_id: str
+  +formula: str
+  +portion: str
+  +rationale: str
+}
+
+class CoachingSession {
+  +session_id: str
+  +query: str
+  +response: str
+  +citations: list
+}
+
+class VetSummary {
+  +summary_id: str
+  +facts: str
+  +prose: str
+  +endorsement: str
+}
+
+PetProfile "1" --> "*" Plan : has
+Plan "1" --> "*" CoachingSession : explains
+Plan "1" --> "1" VetSummary : summarized_by
+
+@enduml

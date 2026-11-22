@@ -1,0 +1,103 @@
+openapi: 3.0.3
+info:
+  title: Credit-Risk Early-Warning API
+  version: 1.0.0
+  description: >
+    Scores B2B equipment-finance accounts for default/delinquency risk using
+    financial + operational telemetry. Returns calibrated PD, survival time-to-event,
+    reason codes, and an early-warning flag. The system never autonomously decides.
+servers:
+  - url: https://risk.sfs.internal/v1
+
+security:
+  - bearerAuth: []
+
+paths:
+  /score:
+    post:
+      summary: Score an account (or batch)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreRequest'
+      responses:
+        '200':
+          description: Score result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreResult'
+
+  /watchlist:
+    get:
+      summary: Get the ranked watchlist
+      parameters:
+        - name: as_of
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Watchlist
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScoreResult'
+
+  /reviews:
+    post:
+      summary: Submit a credit-officer action
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewAction'
+      responses:
+        '200':
+          description: Action recorded
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    ScoreRequest:
+      type: object
+      required: [contract_id, as_of]
+      properties:
+        contract_id: { type: string }
+        as_of: { type: string, format: date }
+
+    ScoreResult:
+      type: object
+      properties:
+        score_id: { type: string }
+        contract_id: { type: string }
+        pd: { type: number }
+        pd_calibrated: { type: number }
+        tte_p10: { type: number }
+        tte_p50: { type: number }
+        tte_p90: { type: number }
+        flag: { type: string, enum: [green, amber, red] }
+        reasons:
+          type: array
+          items:
+            type: object
+            properties:
+              feature: { type: string }
+              contribution: { type: number }
+        model_version: { type: string }
+
+    ReviewAction:
+      type: object
+      required: [score_id, action]
+      properties:
+        score_id: { type: string }
+        action: { type: string, enum: [accept, escalate, restructure, clear] }
+        note: { type: string }

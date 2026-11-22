@@ -58,6 +58,6 @@ POST /v1/forecasts
 
 ## 9. Related
 
-- `Nestle-USA-DemandSensing-AIArchitect-UseCase/04-engineering-and-code/api-contracts-and-specs.yaml`
+- `../../04_engineering_and_code/api-contracts-and-specs.yaml`
 - `02_data_exchange_formats.md`
 - `04_network_resilience_and_rate_limiting.md`
