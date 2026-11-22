@@ -1,0 +1,4 @@
+# Reference implementation dependencies
+# Pure standard library — no runtime deps required.
+# Optional (for pytest instead of unittest):
+pytest>=7.0

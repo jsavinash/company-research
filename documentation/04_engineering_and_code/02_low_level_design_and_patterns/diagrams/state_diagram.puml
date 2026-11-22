@@ -1,0 +1,24 @@
+@startuml state_diagram
+' Forecast run lifecycle
+
+hide empty description
+
+[*] --> Queued
+Queued --> Running : start(worker available)
+Running --> Succeeded : all lines reconciled
+Running --> Failed : error / retry budget exhausted
+Failed --> Queued : retry
+Succeeded --> [*]
+
+state Running {
+  [*] --> Scoring
+  Scoring --> Reconciling : scores ready
+  Reconciling --> Publishing : MinT complete
+  Publishing --> [*]
+}
+
+note right of Failed
+  Last-good forecast may be
+  served (degraded mode)
+end note
+@enduml
